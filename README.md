@@ -26,7 +26,6 @@ It performs quality control, normalization, batch correction (Harmony), clusteri
 
 You need Python 3.8+ and the following packages:
 
-```bash
 pip install scanpy harmonypy gseapy matplotlib seaborn
 
 ## Usage
