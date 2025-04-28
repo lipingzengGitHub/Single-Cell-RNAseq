@@ -1,7 +1,7 @@
 #!/usr/bin/env python 3
 
 #Install required tools
-#pip install scanpy harmonypy gseapy matplotlib seaborn
+#pip install scanpy harmonypy gseapy matplotlib seaborn igraph leidenalg
 
 import scanpy as sc
 import pandas as pd
@@ -17,7 +17,7 @@ samples = ['Patient1', 'Patient2', 'Patient3']
 adatas = []
 
 for sample in samples:
-    ad = sc.read_10x_mtx(f'path/to/{sample}/filtered_feature_bc_matrix/', var_names='gene_symbols', cache=True)
+    ad = sc.read_10x_mtx(f'path/to/{sample}/filtered_feature_bc_matrix/', var_names='gene_symbols', cache=True) #Modify the path for your data
     ad.obs['batch'] = sample  # Add batch labels
     adatas.append(ad)
 
@@ -57,10 +57,50 @@ sc.tl.umap(adata)
 sc.tl.leiden(adata, resolution=0.5)
 
 # Step 10. Plot markers to help annotate cell types
-sc.pl.umap(adata, color=['leiden', 'EPCAM', 'CD3D', 'CD68', 'PECAM1'])
+# Check whether marker genes existed or not
+marker_genes = ['EPCAM', 'CD3D', 'CD68', 'PECAM1']
+marker_genes_exist = [g for g in marker_genes if g in adata.var_names]
+sc.pl.umap(adata, color=['leiden'] + marker_genes_exist)
 
-# Step 11. Rough cell type annotation based on marker expression
-adata.obs['cell_type'] = ['Tumor' if adata[i,:]['EPCAM'].X.mean() > 0.5 else 'Other' for i in range(adata.n_obs)]
+#sc.pl.umap(adata, color=['leiden', 'EPCAM', 'CD3D', 'CD68', 'PECAM1'])
+
+# Step 11. Enhanced cell type annotation based on multiple marker genes
+
+# Define marker genes and thresholds
+marker_genes_thresholds = {
+    'Tumor': {'EPCAM': 0.5},
+    'T_cell': {'CD3D': 0.5},
+    'Macrophage': {'CD68': 0.5},
+    'Endothelial': {'PECAM1': 0.5}
+}
+
+# Initialize
+cell_types = []
+
+# For each cell, determine type
+for i in range(adata.n_obs):
+    assigned_type = 'Other'
+    for cell_type, markers in marker_genes_thresholds.items():
+        passed = True
+        for gene, threshold in markers.items():
+            if gene in adata.var_names:
+                if adata[i, gene].X.mean() <= threshold:
+                    passed = False
+                    break
+            else:
+                passed = False
+                break
+        if passed:
+            assigned_type = cell_type
+            break
+    cell_types.append(assigned_type)
+
+# Save result
+adata.obs['cell_type'] = cell_types
+
+# Optional: check summary
+print(adata.obs['cell_type'].value_counts())
+
 
 # Step 12. Differential expression analysis (Tumor vs Other cells)
 sc.tl.rank_genes_groups(adata, 'cell_type', groups=['Tumor'], reference='Other', method='wilcoxon')

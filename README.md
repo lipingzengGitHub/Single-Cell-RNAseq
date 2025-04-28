@@ -1,4 +1,4 @@
-# Single-cell RNA-seq Analysis for Lung Cancer Patients
+# Single-cell RNA-seq Analysis for Cancer Patients
 
 This project provides a complete scRNA-seq analysis pipeline for multiple lung cancer patient samples.  
 It performs quality control, normalization, batch correction (Harmony), clustering, cell type annotation based on marker genes, differential expression analysis (DEGs) between tumor and non-tumor cells, and functional enrichment analysis (KEGG).
