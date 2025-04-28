@@ -33,7 +33,6 @@ pip install scanpy harmonypy gseapy matplotlib seaborn
 Prepare your data:
 Ensure you have 10X Genomics output directories (filtered_feature_bc_matrix) for each patient sample.
 
-Update sample list:
 Edit the sample names in the script:
 
 samples = ['Patient1', 'Patient2', 'Patient3']
@@ -41,7 +40,7 @@ samples = ['Patient1', 'Patient2', 'Patient3']
 ## How to Run
 python Single-Cell-RNAseq_analysis.py
 
-Note: Modify the data folder in the script
+Note: Edit the data folder in the script
 
 ## Output
 
